@@ -3,7 +3,6 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 
 type SingleSpecification = [String; 2];
-
 #[derive(Serialize, Deserialize)]
 struct Category {
     category_title: String,
@@ -46,7 +45,8 @@ pub fn fetch_source(gsm_arena_id: String) -> String {
     body
 }
 
-pub fn get_specification(gsm_arena_id: String) -> String {
+pub fn get_specification(gsm_arena_id: &str) -> String {
+    let gsm_arena_id = gsm_arena_id.to_string();
     let mut device_specification = DeviceSpecification::new(gsm_arena_id.clone());
 
     let body = fetch_source(gsm_arena_id);
@@ -75,8 +75,17 @@ pub fn get_specification(gsm_arena_id: String) -> String {
             check_title = false;
 
             let tr_vec = subsection.select(&td_selector).collect::<Vec<_>>();
+            if tr_vec.len() == 0{
+                continue;
+            }
             let key = tr_vec[0].text().collect::<Vec<_>>()[0].to_string();
-            let value = tr_vec[1].text().collect::<Vec<_>>()[0].to_string();
+
+            let mut value = String::new();
+            for val in tr_vec[1].text().collect::<Vec<_>>() {
+                if val != "\n" && val != "\n\n"{
+                    value += val;
+                }
+            }
 
             let new_specification: SingleSpecification = [key, value];
             category_specification.add_specification(new_specification)
