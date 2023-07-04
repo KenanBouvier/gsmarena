@@ -2,38 +2,38 @@ use reqwest::blocking;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 
-type SingleSpecification = [String; 2];
+pub type SingleSpecification = [String; 2];
 #[derive(Serialize, Deserialize)]
-struct Category {
+pub struct Category {
     category_title: String,
     category_spec: Vec<SingleSpecification>,
 }
 #[derive(Serialize, Deserialize)]
-struct DeviceSpecification {
+pub struct DeviceSpecification {
     name: String,
     specification: Vec<Category>,
 }
 
 impl Category {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             category_title: String::new(),
             category_spec: Vec::new(),
         }
     }
-    fn add_specification(&mut self, new_specification: SingleSpecification) {
+    pub fn add_specification(&mut self, new_specification: SingleSpecification) {
         self.category_spec.push(new_specification);
     }
 }
 
 impl DeviceSpecification {
-    fn new(name: String) -> Self {
+    pub fn new(name: String) -> Self {
         Self {
             name,
             specification: Vec::new(),
         }
     }
-    fn add_category(&mut self, new_category: Category) {
+    pub fn add_category(&mut self, new_category: Category) {
         self.specification.push(new_category);
     }
 }
