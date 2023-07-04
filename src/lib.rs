@@ -2,22 +2,6 @@ use reqwest::blocking;
 use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 
-/*
-Data formation:
-- The spec list is within the <div id="specs-list"> which contains multiple <table> elements.
-- Every <table> is a section (Network, Launch, Body ... etc)
-- In every section, there are multiple <tr> which are subsections. E.g.(within Display section) Type, Size...
-- The first <tr> within a section has a <th> with the encompassing title (Network, Launch, Body... etc)
-- Within every <tr> there are two <td> elements. Representing subsection title and subsection value respectively.
-*/
-
-pub fn fetch_source(gsm_arena_id: String) -> String {
-    let url = format!("https://www.gsmarena.com/{}.php", gsm_arena_id);
-    let response = blocking::get(url).expect("Could not load url");
-    let body = response.text().unwrap();
-    body
-}
-
 type SingleSpecification = [String; 2];
 
 #[derive(Serialize, Deserialize)]
@@ -55,7 +39,14 @@ impl DeviceSpecification {
     }
 }
 
-pub fn get_specification(gsm_arena_id: String)-> String{
+pub fn fetch_source(gsm_arena_id: String) -> String {
+    let url = format!("https://www.gsmarena.com/{}.php", gsm_arena_id);
+    let response = blocking::get(url).expect("Could not load url");
+    let body = response.text().unwrap();
+    body
+}
+
+pub fn get_specification(gsm_arena_id: String) -> String {
     let mut device_specification = DeviceSpecification::new(gsm_arena_id.clone());
 
     let body = fetch_source(gsm_arena_id);
@@ -97,3 +88,12 @@ pub fn get_specification(gsm_arena_id: String)-> String{
     let json_format = serde_json::to_string(&device_specification).unwrap();
     return json_format;
 }
+
+/*
+Data formation:
+- The spec list is within the <div id="specs-list"> which contains multiple <table> elements.
+- Every <table> is a section (Network, Launch, Body ... etc)
+- In every section, there are multiple <tr> which are subsections. E.g.(within Display section) Type, Size...
+- The first <tr> within a section has a <th> with the encompassing title (Network, Launch, Body... etc)
+- Within every <tr> there are two <td> elements. Representing subsection title and subsection value respectively.
+*/
