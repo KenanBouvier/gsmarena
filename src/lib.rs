@@ -3,15 +3,23 @@ use scraper::{Html, Selector};
 use serde::{Deserialize, Serialize};
 
 pub type SingleSpecification = [String; 2];
-#[derive(Serialize, Deserialize)]
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Category {
     category_title: String,
     category_spec: Vec<SingleSpecification>,
 }
-#[derive(Serialize, Deserialize)]
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DeviceSpecification {
     name: String,
     specification: Vec<Category>,
+}
+
+#[derive(Debug)]
+pub enum SpecReturn {
+    Object(DeviceSpecification),
+    Json(String),
 }
 
 impl Category {
@@ -45,11 +53,10 @@ pub fn fetch_source(gsm_arena_id: String) -> String {
     body
 }
 
-pub fn get_specification(gsm_arena_id: &str) -> String {
-    let gsm_arena_id = gsm_arena_id.to_string();
-    let mut device_specification = DeviceSpecification::new(gsm_arena_id.clone());
+pub fn get_specification(gsm_arena_id: &str, json_format: bool) -> SpecReturn {
+    let mut device_specification = DeviceSpecification::new(gsm_arena_id.to_owned());
 
-    let body = fetch_source(gsm_arena_id);
+    let body = fetch_source(gsm_arena_id.to_owned());
     let document = Html::parse_document(&body);
 
     let specs_list_table_selector = Selector::parse("#specs-list table").unwrap();
@@ -69,20 +76,20 @@ pub fn get_specification(gsm_arena_id: &str) -> String {
                 let th_vec = table.select(&th_selector).collect::<Vec<_>>();
                 for th in th_vec {
                     let section_title = th.text().collect::<Vec<_>>()[0].to_string();
-                    category_specification.category_title = section_title.clone();
+                    category_specification.category_title = section_title;
                 }
             }
             check_title = false;
 
             let tr_vec = subsection.select(&td_selector).collect::<Vec<_>>();
-            if tr_vec.len() == 0{
+            if tr_vec.len() == 0 {
                 continue;
             }
             let key = tr_vec[0].text().collect::<Vec<_>>()[0].to_string();
 
             let mut value = String::new();
             for val in tr_vec[1].text().collect::<Vec<_>>() {
-                if val != "\n" && val != "\n\n"{
+                if val != "\n" && val != "\n\n" {
                     value += val;
                 }
             }
@@ -94,8 +101,10 @@ pub fn get_specification(gsm_arena_id: &str) -> String {
         check_title = true;
     }
 
-    let json_format = serde_json::to_string(&device_specification).unwrap();
-    return json_format;
+    if json_format {
+        return SpecReturn::Json(serde_json::to_string(&device_specification).unwrap());
+    }
+    return SpecReturn::Object(device_specification);
 }
 
 /*
