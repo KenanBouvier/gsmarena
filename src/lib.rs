@@ -16,12 +16,6 @@ pub struct DeviceSpecification {
     specification: Vec<Category>,
 }
 
-#[derive(Debug)]
-pub enum SpecReturn {
-    Object(DeviceSpecification),
-    Json(String),
-}
-
 impl Category {
     pub fn new() -> Self {
         Self {
@@ -53,7 +47,7 @@ pub fn fetch_source(gsm_arena_id: String) -> String {
     body
 }
 
-pub fn get_specification(gsm_arena_id: &str, json_format: bool) -> SpecReturn {
+pub fn get_specification(gsm_arena_id: &str) -> DeviceSpecification {
     let mut device_specification = DeviceSpecification::new(gsm_arena_id.to_owned());
 
     let body = fetch_source(gsm_arena_id.to_owned());
@@ -100,11 +94,12 @@ pub fn get_specification(gsm_arena_id: &str, json_format: bool) -> SpecReturn {
         device_specification.add_category(category_specification);
         check_title = true;
     }
+    return device_specification;
+}
 
-    if json_format {
-        return SpecReturn::Json(serde_json::to_string(&device_specification).unwrap());
-    }
-    return SpecReturn::Object(device_specification);
+pub fn get_specification_json(gsm_arena_id: &str) -> String {
+    let specification_object = get_specification(gsm_arena_id);
+    return serde_json::to_string(&specification_object).unwrap();
 }
 
 /*
