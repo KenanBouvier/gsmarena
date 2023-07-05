@@ -2,21 +2,25 @@
 An Api interface for GSMArena device specifications.
 
 - Obtains the spec sheet listed on their database.
-- Returns data in json format for further use.
+- Returns data in json format or as an object for further use.
 
 
-The core function takes in one argument: the "id", which can be found in the URL as such:
+The core functions take in one argument: the "id", which can be found in the URL as such:
 
 ```
 https://www.gsmarena.com/samsung_galaxy_a54-12070.php -> samsung_galaxy_a54-12070 
 ```
 
+
 ## Example
 
 ```rust
 fn main() {
-    let response = gsmarena::get_specification("samsung_galaxy_a54-12070");
-    println!("{}",response);
+    let json_format = gsmarena::get_specification_json("samsung_galaxy_a54-12070");
+    println!("{}", response);
+
+    let object_format = gsmarena::get_specification("samsung_galaxy_a54-12070");
+    // println!("{:#?}", object)
 }
 ```
 
